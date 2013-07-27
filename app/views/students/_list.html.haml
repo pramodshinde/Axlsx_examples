@@ -1,0 +1,28 @@
+- if student.remark == "PASS"
+  %tr.success
+    %td
+      = student.fname
+    %td
+      = student.lname
+    %td
+      = student.marks
+    %td
+      = student.percentage
+    %td
+      = student.grade
+    %td
+      = student.remark
+- else
+  %tr.warning
+    %td
+      = student.fname
+    %td
+      = student.lname
+    %td
+      = student.marks
+    %td
+      = student.percentage
+    %td
+      = student.grade
+    %td
+      = student.remark

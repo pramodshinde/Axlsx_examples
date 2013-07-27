@@ -1,0 +1,30 @@
+%h2 Index
+Listing Students
+.pull-right
+  = link_to "Generate Data", generate_students_path, remote: true, class: "btn btn-success", id: "generate"
+%table.table
+  %thead
+    %tr
+      %th First Name
+      %th Last Name
+      %th Marks
+      %th Percentage
+      %th Grade
+      %th Remark
+  %tbody.list
+    - if !@students.empty?
+      = render partial: 'list', collection: @students, as: :student
+    - else
+      %tr
+        %td
+          = render text: "No Data To display"
+= image_tag "ajax_spinner.gif", id: "spinner"
+:javascript
+  $("#generate").bind("ajax:success", function(){
+    $("#spinner").hide();
+    $(".list").show();
+  });
+  $("#generate").bind("ajax:beforeSend", function(){
+    $(".list").hide();
+    $("#spinner").show();
+  });
