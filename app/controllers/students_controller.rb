@@ -20,6 +20,16 @@ class StudentsController < ApplicationController
       export_all_together_xlsx
     when "Merge"
       export_merge_xlsx
+    when "Image"
+      export_image_xlsx
+    when "Hyperlink"
+      export_hyperlink_xlsx
+    when "Bar Chart"
+      export_bar_chart_axlsx
+    when "Line Chart"
+      export_line_chart_axlsx
+    when "Pie Chart"
+      export_pie_chart_axlsx
     end
   end
 
@@ -148,8 +158,92 @@ class StudentsController < ApplicationController
   end
 
   def export_image_xlsx
-    @wb.add_worksheet(name: "Image") do
+    @wb.add_worksheet(name: "Image") do |sheet|
+      sheet.add_row ["", "Yehh !! Results", "", "", "", ""], style: @heading, height: 30
+      img = File.expand_path(Rails.root+'app/assets/images/result.png')
+      sheet.add_image(:image_src => img, :hyperlink=>"http://rubyInsense.heroku.com") do |image|
+        image.width=400
+        image.height=300
+        image.hyperlink.tooltip = "Labeled Link"
+        image.start_at 1, 1
+      end
     end
+    @wb.add_worksheet(name: "Data Type") do |sheet|
+      sheet.add_row ["Date", "Time", "String", "Boolean", "Float", "Integer"]
+      sheet.add_row [Date.today, Time.now, "value", true, 0.1, 1], :style => [@date_format, @time_format]
+      sheet.column_widths 10, 10, nil, nil, nil, nil
+    end
+    @p.serialize("#{Rails.root}/tmp/Image.xlsx")
+    send_file("#{Rails.root}/tmp/Image.xlsx", filename: "Image.xlsx", type: "application/xlsx")
+  end
+
+  def export_hyperlink_xlsx
+    @wb.add_worksheet(:name => 'Hyperlinks') do |sheet|
+      sheet.add_row ['rubyInsense']
+      sheet.add_hyperlink :location => 'http://rubyInsense.heroku.com', :ref => sheet.rows.first.cells.first
+      sheet.add_hyperlink :location => "'Next Sheet'!A1", :ref => 'A2', :target => :sheet
+      sheet.add_row ['Go to next sheet']
+    end
+    @wb.add_worksheet(:name => 'Next Sheet') do |sheet|
+      sheet.add_row ['hello!']
+    end
+    @p.serialize("#{Rails.root}/tmp/links.xlsx")
+    send_file("#{Rails.root}/tmp/links.xlsx", filename: "Links.xlsx", type: "application/xlsx")
+  end
+
+  def export_bar_chart_axlsx
+    @a = Student.where(grade: "A").count
+    @b = Student.where(grade: "B").count
+    @c = Student.where(grade: "C").count
+    @fail = Student.where(remark: "FAIL").count
+    @wb.add_worksheet(name: "Bar Chart") do |sheet|
+      sheet.add_row ["", "Result Analysis", "", "", "", ""], style: @heading, height: 30
+      sheet.add_row ["Grade A", "Grade B", "Grade C", "FAIL"]
+      sheet.add_row [@a, @b, @c, @fail]
+      sheet.add_chart(Axlsx::Bar3DChart, :start_at => "A4", :end_at => "H19", :bar_dir => :col) do |chart|
+        chart.add_series :data => sheet["A3:D3"], :labels => sheet["A2:D2"], :title => sheet["B1"], colors: ["00FF00", "0066CC", "F0", "FF0000"]
+      end
+      sheet.column_widths 10, 10, nil, nil, nil, nil
+    end
+    @p.serialize("#{Rails.root}/tmp/bar.xlsx")
+    send_file("#{Rails.root}/tmp/bar.xlsx", filename: "Bar.xlsx", type: "application/xlsx")
+  end
+
+  def export_line_chart_axlsx
+    @wb.add_worksheet(:name => "Line Chart") do |sheet|
+      sheet.add_row ["First", 1, 5, 7, 9]
+      sheet.add_row ["Second", 5, 2, 14, 9]
+      sheet.add_chart(Axlsx::LineChart, :title => "Line Chart") do |chart|
+        chart.start_at 0, 2
+        chart.end_at 10, 15
+        chart.add_series :data => sheet["B1:E1"], :title => sheet["A1"], :color => "0000FF"
+        chart.add_series :data => sheet["B2:E2"], :title => sheet["A2"], :color => "FF0000"
+        chart.catAxis.title = 'Y Axis'
+        chart.valAxis.title = 'X Axis'
+      end
+    end
+    @p.serialize("#{Rails.root}/tmp/line.xlsx")
+    send_file("#{Rails.root}/tmp/line.xlsx", filename: "line.xlsx", type: "application/xlsx")
+  end
+
+  def export_pie_chart_axlsx
+    @wb.add_worksheet(:name => "Pie Chart") do |sheet|
+      sheet.add_row ["", "Result Analysis"], style: @heading
+      sheet.add_row ["Grade", "Percentage"], style: @header
+      @a = Student.where(grade: "A").count
+      @b = Student.where(grade: "B").count
+      @c = Student.where(grade: "C").count
+      sheet.add_row ["A", @a]
+      sheet.add_row ["B", @b]
+      sheet.add_row ["C", @c]
+      sheet.add_chart(Axlsx::Pie3DChart, :start_at => [0,6], :end_at => [6, 20], :title => "Pie Chart") do |chart|
+        chart.add_series :data => sheet["B3:B5"], :labels => sheet["A3:A5"],  :colors => ['FF0000', '00FF00', '0000FF']
+        chart.d_lbls.d_lbl_pos = :bestFit
+        chart.d_lbls.show_percent = :true
+      end
+    end
+    @p.serialize("#{Rails.root}/tmp/pie.xlsx")
+    send_file("#{Rails.root}/tmp/pie.xlsx", filename: "pie.xlsx", type: "application/xlsx")
   end
 
   private
@@ -174,6 +268,8 @@ class StudentsController < ApplicationController
       @style_pass = [@data, @data, @data, @data, @center, @green]
       @style_fail = [@data, @data, @data, @data, @center, @red]
       @total = [@data, @header, @header, @header, @header, @header]
+      @date_format = s.add_style :format_code => 'YYYY-MM-DD'
+      @time_format = s.add_style :format_code => 'hh:mm:ss'
     end
   end
 

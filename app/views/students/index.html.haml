@@ -1,6 +1,6 @@
 %h2 Listing Students
 .pull-right
-  - type = ["Basic", "Row&Col", "Custom", "All apply", "Merge"] 
+  - type = ["Basic", "Row&Col", "Custom", "All apply", "Merge", "Image", "Hyperlink", "Bar Chart", "Line Chart","Pie Chart"] 
   = form_tag :controller => :students, :action => :export do
     = select_tag :type, options_for_select(type), id: "type" 
     = submit_tag "Export to xlxs", class: "btn btn-success", id: "export"
