@@ -1,6 +1,9 @@
-%h2 Index
-Listing Students
+%h2 Listing Students
 .pull-right
+  - type = ["Basic", "Row&Col", "Custom", "All apply", "Merge"] 
+  = form_tag :controller => :students, :action => :export do
+    = select_tag :type, options_for_select(type), id: "type" 
+    = submit_tag "Export to xlxs", class: "btn btn-success", id: "export"
   = link_to "Generate Data", generate_students_path, remote: true, class: "btn btn-success", id: "generate"
 %table.table
   %thead

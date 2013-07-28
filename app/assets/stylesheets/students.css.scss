@@ -4,8 +4,24 @@
 body {
   margin: 50px;
 }
+table {
+    margin-top: 45px;
+}
 #spinner{
   margin-left: auto;
   margin-right: auto;
   display: none;
+}
+#generate {
+    position: absolute;
+    right: 110px;
+    top: 85px;
+}
+form {
+    position: absolute;
+    right: 240px;
+    top: 75px;
+}
+#type {
+    margin-top: 10px;
 }

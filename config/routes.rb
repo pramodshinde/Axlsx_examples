@@ -4,6 +4,7 @@ TalkDemo::Application.routes.draw do
   resources :students do
     collection do
       get :generate
+      post :export
     end
   end
   root to: "students#index"
